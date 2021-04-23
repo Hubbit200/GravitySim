@@ -13,7 +13,7 @@ ArrayList<PVector> collisions = new ArrayList<PVector>();
 PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex;
 PImage[] planetTex = new PImage[10];
 color[] trailColours = {#5F5F5F, #A5A5A5, #A5A5A5, #E5B66F, #6F76E5, #D38253, #E5C89B, #868BE0, #C586E0, #FADB28};
-int hovered, draggingValue;
+int hovered, draggingValue, centeredId = -1;
 
 //CELESTIAL BODY CLASS
 class Body {
@@ -120,6 +120,10 @@ void destroyBody(int id) {
   celestialBodies[id] = celestialBodies[celestialBodies.length-1];
   celestialBodies[id].id = id;
   celestialBodies = (Body[]) shorten(celestialBodies);
+  if (centeredId == id) {
+    if (centeredId < celestialBodies.length-1)centeredId++;
+    else centeredId = 0;
+  }
 }
 
 void recenter() {
@@ -263,12 +267,16 @@ void setup() {
 }
 
 void draw() {
-  if (dragging) {
+  if (centeredId != -1) {
+    viewX = celestialBodies[centeredId].posX-width/(2*zoom);
+    viewY = celestialBodies[centeredId].posY-height/(2*zoom);
+  } else if (dragging) {
     viewX = viewX + (ogX-mouseX);
     viewY = viewY + (ogY-mouseY);
     ogY = mouseY;
     ogX = mouseX;
-  } else if (draggingValue!=0) {
+  }
+  if (draggingValue!=0) {
     switch(draggingValue) {
     case 1:
       spawnRadius = constrain(map(mouseY, 20, 165, 200, 5), 5, 200);
@@ -355,13 +363,20 @@ void mouseReleased() {
 }
 
 void mouseWheel(MouseEvent event) {
-  if (event.getCount()>0 && zoom > 0.3) {
-    viewX -= mouseX*zoom-mouseX*(zoom-0.05);
-    viewY -= mouseY*zoom-mouseY*(zoom-0.05);
+  if (event.getCount()>0 && zoom-0.05 > 0.3) {
     zoom-=0.05;
-  } else if (zoom < 1.6) {
-    viewX += mouseX*zoom-mouseX*(zoom-0.05);
-    viewY += mouseY*zoom-mouseY*(zoom-0.05);
+    viewX += (width/2*zoom-width/2*(zoom+0.05));
+    viewY += (height/2*zoom-height/2*(zoom+0.05));
+  } else if (event.getCount()<0 && zoom+0.05 < 2) {
     zoom+=0.05;
+    viewX += (mouseX*zoom-mouseX*(zoom-0.05))/2;
+    viewY += (mouseY*zoom-mouseY*(zoom-0.05))/2;
+  }
+}
+
+void keyPressed() {
+  if (key == 'p') {
+    if (centeredId < celestialBodies.length-1)centeredId++;
+    else centeredId = 0;
   }
 }
