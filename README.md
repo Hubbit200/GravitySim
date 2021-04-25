@@ -8,3 +8,5 @@ You can switch to follow cam with "p" (but you currently can't get out again)
 - Follow cam fixes and UI
 - Explosions on collisions!
 - Idk what else tbh
+
+<img src="https://github.com/Hubbit200/GravitySim/blob/main/PlanetSample.gif">
