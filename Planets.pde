@@ -9,6 +9,7 @@ float speed = 1, updateFrequency = 20, qualityLevel = 1, spawnRadius = 20, spawn
 double spawnMass = 9e23;
 float ogX, ogY, lastMillis = -speed, zoom = 1, draggingY;
 ArrayList<PVector> collisions = new ArrayList<PVector>();
+PVector[] stars = new PVector[150];
 
 PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex;
 PImage[] planetTex = new PImage[10];
@@ -231,6 +232,9 @@ void drawUI() {
     tint(255, 255);
     image(create, width/2-width/19-58, 9, 60, 60);
   } else image(create, width/2-width/19-60, 11, 60, 60);
+  
+  fill(255);
+  if(centeredId != -1)text("Planeta "+celestialBodies[centeredId].id, width/2, 110);
 }
 
 //START ----------------------------------------------------------------
@@ -258,6 +262,10 @@ void setup() {
   planetsTex = loadImage("planets.png");
   for (int i = 0; i < 10; i++) {
     planetTex[i] = planetsTex.get(i%5*200, floor(i/5)*200, 200, 200);
+  }
+
+  for (int i = 0; i < 150; i++) {
+    stars[i] = new PVector(random(-5000, 5000), random(-2000, 2000), random(1, 4));
   }
 
   //Create init planets
@@ -293,7 +301,11 @@ void draw() {
     }
   }
 
-  background(0);  
+  background(0);
+  fill(255);
+  for (int i = 0; i < 150; i++) {
+    if (stars[i].x-(viewX/4*zoom) > 0 && stars[i].y-(viewY/4*zoom) > 0 && stars[i].x-(viewX/4*zoom)<width && stars[i].y-(viewY/4*zoom) < height)circle(stars[i].x-(viewX/4*zoom), stars[i].y-(viewY/4*zoom), stars[i].z);
+  }
 
   for (Body p : celestialBodies) {
     if (millis()-lastMillis > updateFrequency/speed/qualityLevel && running) {
@@ -377,6 +389,6 @@ void mouseWheel(MouseEvent event) {
 void keyPressed() {
   if (key == 'p') {
     if (centeredId < celestialBodies.length-1)centeredId++;
-    else centeredId = 0;
+    else centeredId = -1;
   }
 }
