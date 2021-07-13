@@ -10,7 +10,7 @@ double spawnMass = 9e23;
 float ogX, ogY, lastMillis = -speed, zoom = 1, draggingY;
 ArrayList<PVector> collisions = new ArrayList<PVector>();
 
-PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex;
+PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex, stars;
 PImage[] planetTex = new PImage[10];
 color[] trailColours = {#5F5F5F, #A5A5A5, #A5A5A5, #E5B66F, #6F76E5, #D38253, #E5C89B, #868BE0, #C586E0, #FADB28};
 int hovered, draggingValue, centeredId = -1;
@@ -256,6 +256,8 @@ void setup() {
   recentre = loadImage("centre.png");
   create = loadImage("create.png");
   planetsTex = loadImage("planets.png");
+  stars = loadImage("stars.jpg");
+  stars.resize(0,2160);
   for (int i = 0; i < 10; i++) {
     planetTex[i] = planetsTex.get(i%5*200, floor(i/5)*200, 200, 200);
   }
@@ -293,7 +295,8 @@ void draw() {
     }
   }
 
-  background(0);  
+  background(0);
+  //image(stars, map(viewX, -2000,2000,width-3840,0),map(viewY, -2000,2000,height-2160,0),3840,2160);
 
   for (Body p : celestialBodies) {
     if (millis()-lastMillis > updateFrequency/speed/qualityLevel && running) {
