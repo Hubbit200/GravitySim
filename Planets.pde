@@ -1,3 +1,8 @@
+//----------------------------------//
+//             LEO HN               //
+//   https://github.com/Hubbit200   //
+//----------------------------------//
+
 //VARIABLES & CLASSES --------------------------------------------------
 double gVar = 6.674e-11;
 Body[] celestialBodies = new Body[0];
@@ -11,7 +16,7 @@ float ogX, ogY, lastMillis = -speed, zoom = 1, draggingY;
 ArrayList<PVector> collisions = new ArrayList<PVector>();
 PVector[] stars = new PVector[150];
 
-PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex;
+PImage pause, play, menubg, x1, x5, x05, recentre, create, planetsTex, camera;
 PImage[] planetTex = new PImage[10];
 color[] trailColours = {#5F5F5F, #A5A5A5, #A5A5A5, #E5B66F, #6F76E5, #D38253, #E5C89B, #868BE0, #C586E0, #FADB28};
 int hovered, draggingValue, centeredId = -1;
@@ -75,7 +80,7 @@ class Body {
     for (Body p : celestialBodies) {
       if (p.id != id && dist(posX, posY, p.posX, p.posY) < radius/2 + p.radius/2 && !collisions.contains(new PVector(p.id, id, 0)) && !collisions.contains(new PVector(id, p.id, 0))) {
         collisions.add(new PVector(id, p.id));
-        println(collisions);
+        //println(collisions);
         if (radius < p.radius) {
           collisions.remove(collisions.indexOf(new PVector(id, p.id, 0)));
           p.velX = p.velX/2;
@@ -117,6 +122,7 @@ void newPlanet(final int x, final int y, final float r, final double m, final fl
   celestialBodies[celestialBodies.length-1] = new Body(x, y, r, m, celestialBodies.length-1, sx, sy, stat);
 }
 
+// Destroy body and remove references
 void destroyBody(int id) {
   celestialBodies[id] = celestialBodies[celestialBodies.length-1];
   celestialBodies[id].id = id;
@@ -127,13 +133,14 @@ void destroyBody(int id) {
   }
 }
 
+// Recenter camera view
 void recenter() {
   viewY = 0;
   viewX = 0;
 }
 
+// Draw all UI and set hovers
 void drawUI() {
-
   if (mouseY<80 && mouseX > width/5*2) {
     if (mouseX<width/2 && mouseX>width/2-65)hovered=1;
     else if (mouseX>width/2 && mouseX<width/2+65)hovered=2;
@@ -145,10 +152,12 @@ void drawUI() {
     else if (mouseX<width/2.85)hovered = 7;
     else if (mouseX<width/2.5)hovered = 8;
     else hovered = 9;
+  } else if(mouseY < 130 && mouseX > width/9*4 && mouseX < width/9*5) {
+    hovered = 10;
   } else hovered = 0;
 
-
   if (createOpen) {
+    textSize(20);
     fill(160);
     if (hovered == 0)circle(mouseX, mouseY, spawnRadius*zoom);
     fill(100);
@@ -177,9 +186,11 @@ void drawUI() {
     fill(0);
     if (spawnStationary)text("YES", width/2.4-40, 120, 80, 36);
     else text("NO", width/2.4-40, 120, 80, 36);
+    textSize(30);
   }
 
   image(menubg, width/5*2, 0, width/5, 80);
+  image(menubg, width/9*4, 83, width/9, 45);
 
   if (running) {
     if (hovered != 1) {
@@ -233,21 +244,27 @@ void drawUI() {
     image(create, width/2-width/19-58, 9, 60, 60);
   } else image(create, width/2-width/19-60, 11, 60, 60);
   
-  fill(255);
-  if(centeredId != -1)text("Planeta "+celestialBodies[centeredId].id, width/2, 110);
+  if (hovered!=10) {
+    tint(255, 50);
+    image(camera, width/9*4+35, 86, 40, 40);
+    tint(255, 255);
+    image(camera, width/9*4+37, 84, 40, 40);
+  } else image(camera, width/9*4+35, 86, 40, 40);
+  fill(0);
+  if(centeredId != -1)text("Planet "+celestialBodies[centeredId].id, width/2, 100);
+  else text("Freecam", width/2, 100);
 }
 
-//START ----------------------------------------------------------------
-//Setup
+// START ----------------------------------------------------------------
+// Setup
 void setup() {
-  //size(1400, 1200);
   frameRate(60);
   fullScreen();
   smooth();
   fill(255);
   background(0);
   noStroke();
-  textSize(20);
+  textSize(30);
   textAlign(CENTER, CENTER);
 
   //Load images
@@ -259,6 +276,7 @@ void setup() {
   x05 = loadImage("0.5x.png");
   recentre = loadImage("centre.png");
   create = loadImage("create.png");
+  camera = loadImage("camera.png");
   planetsTex = loadImage("planets.png");
   for (int i = 0; i < 10; i++) {
     planetTex[i] = planetsTex.get(i%5*200, floor(i/5)*200, 200, 200);
@@ -269,12 +287,14 @@ void setup() {
   }
 
   //Create init planets
+  newPlanet(1500, 600, 160, 9e25, 0, 0, true);
   newPlanet(550, 400, 30, 5.9e20, 5, -130, false);
   newPlanet(400, 400, 60, 5.9e24, 5, -80, false);
-  newPlanet(1500, 600, 160, 9e25, 0, 0, true);
 }
 
+// Draw calls
 void draw() {
+  // Camera positioning
   if (centeredId != -1) {
     viewX = celestialBodies[centeredId].posX-width/(2*zoom);
     viewY = celestialBodies[centeredId].posY-height/(2*zoom);
@@ -301,6 +321,7 @@ void draw() {
     }
   }
 
+  // Draw stars and planets
   background(0);
   fill(255);
   for (int i = 0; i < 150; i++) {
@@ -319,6 +340,7 @@ void draw() {
   drawUI();
 }
 
+// Click actions & zoom with scroll
 void mousePressed() {
   if (hovered == 0) {
     if (createOpen) {
@@ -366,6 +388,10 @@ void mousePressed() {
     case 9:
       spawnStationary = !spawnStationary;
       break;
+    case 10:
+      if (centeredId < celestialBodies.length-1)centeredId++;
+      else centeredId = -1;
+      break;
     }
   }
 }
@@ -383,12 +409,5 @@ void mouseWheel(MouseEvent event) {
     zoom+=0.05;
     viewX += (mouseX*zoom-mouseX*(zoom-0.05))/2;
     viewY += (mouseY*zoom-mouseY*(zoom-0.05))/2;
-  }
-}
-
-void keyPressed() {
-  if (key == 'p') {
-    if (centeredId < celestialBodies.length-1)centeredId++;
-    else centeredId = -1;
   }
 }
